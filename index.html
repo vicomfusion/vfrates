@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VicomFusion WiFi Rates</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  header h1 {
+    font-size: 24px;
+    color: #333;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #888;
+  }
+  footer p {
+    font-size: 14px;
+  }
+  input[type="text"] {
+    width: calc(100% - 24px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+  button {
+    display: block;
+    width: calc(100% - 24px);
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #result {
+    width: calc(100% - 24px);
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    word-wrap: break-word;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>VicomFusion WiFi Rates</h1>
+  </header>
+
+  <form id="inputForm">
+    <input type="text" id="rateName" name="rateName" placeholder="Rate Name">
+    <input type="text" id="price" name="price" placeholder="Price">
+    <input type="text" id="minutes" name="minutes" placeholder="Minutes">
+    <input type="text" id="validity" name="validity" placeholder="Validity (in minutes)">
+    <input type="text" id="limitUsage" name="limitUsage" placeholder="Limit Usage (Optional)">
+    <input type="text" id="userProfile" name="userProfile" placeholder="User Profile">
+    <input type="text" id="token" name="token" placeholder="Token">
+    <input type="text" id="ip" name="ip" placeholder="IP Address">
+    <button type="button" onclick="addRate()">Add Rate</button>
+    <button style="display:none;" id="getFinalResult" onclick="showFinalResult()">Get the result</button>
+  </form>
+
+  <div id="result"></div>
+
+  <footer>
+    <p>Powered by: VicomFusion</p>
+  </footer>
+
+  <script>
+    var token = "";
+    var ip = "";
+    var ratesData = [];
+
+    function addRate() {
+      var rateName = document.getElementById("rateName").value.replace(/ /g, '+');
+      var price = document.getElementById("price").value;
+      var minutes = document.getElementById("minutes").value.replace(/ /g, '+');
+      var validity = document.getElementById("validity").value;
+      var limitUsage = document.getElementById("limitUsage").value;
+      var userProfile = document.getElementById("userProfile").value;
+
+      if (token === "") {
+        token = document.getElementById("token").value;
+      }
+      if (ip === "") {
+        ip = document.getElementById("ip").value;
+      }
+
+      var rateString = rateName + '#' + price + '#' + minutes + '#' + validity + '#' + limitUsage + '#' + userProfile;
+      ratesData.push(rateString);
+
+      document.getElementById("getFinalResult").innerText = "Get the result (" + ratesData.length + ")";
+      document.getElementById("getFinalResult").style.display = "inline";
+      
+      // Clear only Price, Minutes, and Validity input boxes
+      document.getElementById("price").value = "";
+      document.getElementById("minutes").value = "";
+      document.getElementById("validity").value = "";
+    }
+
+    function showFinalResult() {
+      var result = '/tool fetch http-method=post http-header-field="X-TOKEN: ' + token + '" url="http://' + ip + '/admin/api/saveRates?rateType=1&data=' + ratesData.join('%7C') + '";';
+
+      document.getElementById("result").innerText = result;
+      copyToClipboard(result);
+      alert("Result copied to clipboard!");
+    }
+
+    function copyToClipboard(text) {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+  </script>
+</body>
+</html>
