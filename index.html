@@ -27,17 +27,16 @@
     font-size: 14px;
   }
   input[type="text"] {
-    width: calc(100% - 24px);
+    width: calc(100% - 24px - 75px);
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
     font-size: 16px;
+    display: inline-block;
   }
   button {
-    display: block;
-    width: calc(100% - 24px);
     padding: 12px;
     margin-bottom: 10px;
     border: none;
@@ -50,6 +49,10 @@
   button:hover {
     background-color: #0056b3;
   }
+  #convertBtn, #convertValidityBtn {
+    width: 75px;
+    display: inline-block;
+  }
   #result {
     width: calc(100% - 24px);
     padding: 15px;
@@ -59,26 +62,55 @@
     background-color: #f9f9f9;
     word-wrap: break-word;
   }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 10px;
+  }
+  .modal-header {
+    text-align: center;
+  }
+  .modal-footer {
+    text-align: center;
+    margin-top: 20px;
+  }
 </style>
 </head>
 <body>
   <header>
-     <img src="https://vicomfusion.github.io/vficons/icon.png" alt="vficon"><h1>VicomFusion WiFi Rates</h1>
-  
+    <img src="https://vicomfusion.github.io/vficons/icon.png" alt="vficon"><h1>VicomFusion WiFi Rates</h1>
   </header>
 
   <form id="inputForm">
     <input type="text" id="rateName" name="rateName" placeholder="Rate Name">
     <input type="text" id="price" name="price" placeholder="Price">
     <input type="text" id="minutes" name="minutes" placeholder="Minutes">
+    <button type="button" id="convertBtn" onclick="openConvertDialog('minutes')">Convert</button>
     <input type="text" id="validity" name="validity" placeholder="Validity (in minutes)">
+    <button type="button" id="convertValidityBtn" onclick="openConvertDialog('validity')">Convert</button>
     <input type="text" id="limitUsage" name="limitUsage" placeholder="Limit Usage (Optional)">
     <input type="text" id="userProfile" name="userProfile" placeholder="User Profile">
     <input type="text" id="token" name="token" placeholder="Token">
     <input type="text" id="ip" name="ip" placeholder="IP Address">
     <button type="button" onclick="addRate()">Add Rate</button>
-    <button style="display:none;" id="getFinalResult" onclick="showFinalResult()">Get the result</button>
   </form>
+  
+  <button id="getFinalResult" style="display:none;" onclick="showFinalResult()">Get the result</button>
 
   <div id="result"></div>
 
@@ -86,10 +118,27 @@
     <p>Powered by: VicomFusion</p>
   </footer>
 
+  <!-- Conversion Dialog Modal -->
+  <div id="convertModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Choose what you want to convert</h3>
+      </div>
+      <div class="modal-body">
+        <button type="button" onclick="convert('days')">Days</button>
+        <button type="button" onclick="convert('hours')">Hours</button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeConvertDialog()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     var token = "";
     var ip = "";
     var ratesData = [];
+    var currentField = '';
 
     function addRate() {
       var rateName = document.getElementById("rateName").value.replace(/ /g, '+');
@@ -133,6 +182,34 @@
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
+    }
+
+    function openConvertDialog(field) {
+      currentField = field;
+      document.getElementById("convertModal").style.display = "block";
+    }
+
+    function closeConvertDialog() {
+      document.getElementById("convertModal").style.display = "none";
+    }
+
+    function convert(unit) {
+      var field = document.getElementById(currentField);
+      var minutes = parseInt(field.value);
+      if (isNaN(minutes)) {
+        alert("Please enter a valid number of minutes.");
+        return;
+      }
+
+      var convertedMinutes;
+      if (unit === 'days') {
+        convertedMinutes = minutes * 1440; // 1 day = 1440 minutes
+      } else if (unit === 'hours') {
+        convertedMinutes = minutes * 60; // 1 hour = 60 minutes
+      }
+
+      field.value = convertedMinutes;
+      closeConvertDialog();
     }
   </script>
 </body>
